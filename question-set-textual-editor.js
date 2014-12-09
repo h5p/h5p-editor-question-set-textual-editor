@@ -42,6 +42,21 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
     var $cleaner = $('<div/>');
 
     /**
+     * Clever variant of trim that can trim undefined values.
+     *
+     * @private
+     * @param {String} value
+     * @returns {String} Trimmed string, empty string if value is undefined.
+     */
+    var trim = function (value) {
+      if (value === undefined) {
+        return '';
+      }
+
+      return value.trim();
+    };
+
+    /**
      * Clears all items from the list, processes the text and add the items
      * from the text. This makes it possible to switch to another widget
      * without losing datas.
@@ -81,11 +96,12 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
         // Convert text to html
         $cleaner.text(textLine);
 
+        var matches;
         if (question === undefined) {
           numQuestions++;
 
           // Find out if we should re-use values from an old question
-          var matches = textLine.match(/^(\d+)\.\s?(.+)$/);
+          matches = textLine.match(/^(\d+)\.\s?(.+)$/);
           if (matches !== null && matches.length === 3) {
             // Get old question
             question = oldQuestions[matches[1] - 1];
@@ -112,21 +128,38 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
         }
         else {
           // Add line as answer
-          if (question.params.answers === undefined) {
-            question.params.answers = [];
-          }
 
-          var correct = (textLine.substr(0, 1) === '*');
-          question.params.answers.push({
-            text: (correct ? textLine.substr(1) : textLine),
-            correct: correct
-          });
+          // Split up answer line according to format
+          matches = textLine.match(/^(\*?)([^:]*)(:([^:]*))?(:([^:]*))?(:([^:]*))?$/);
+          if (matches && matches.length === 9) {
+            var text = trim(matches[2]);
+            if (text) {
 
-          if (correct) {
-            corrects++;
-          }
-          if (question.params.singleAnswer === undefined && corrects > 1) {
-            question.params.singleAnswer = false;
+              if (question.params.answers === undefined) {
+                // Create new set of answers
+                question.params.answers = [];
+              }
+
+              // Determine if this is a correct answer
+              var correct = (matches[1] === '*');
+
+              // Create new answer and add to question
+              question.params.answers.push({
+                text: text,
+                correct: correct,
+                chosenFeedback: trim(matches[6]),
+                notChosenFeedback: trim(matches[8]),
+                tip: trim(matches[4])
+              });
+
+              if (correct) {
+                corrects++; // Count number of correct answers
+              }
+              if (question.params.singleAnswer === undefined && corrects > 1) {
+                // Question has multiple correct answers.
+                question.params.singleAnswer = false;
+              }
+            }
           }
         }
       }
@@ -151,9 +184,10 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
      *
      * @private
      * @param {(String|Boolean)} value To work with
-     * @param {String} [prefix] Added before value
+     * @param {String} [prefix] Prepended to value
+     * @param {String} [suffix] Appended to value
      */
-    var strip = function (value, prefix) {
+    var strip = function (value, prefix, suffix) {
       if (!value) {
         return '';
       }
@@ -164,9 +198,10 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
           // Add given prefix to value
           value = prefix + value;
         }
-
-        // Add line break to non-empty values
-        value += LB;
+        if (suffix) {
+          // Add given suffix to value
+          value += suffix;
+        }
       }
 
       return value;
@@ -186,7 +221,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
         switch (getName(child)) {
           case 'question':
             // Strip value to make it text friendly
-            question = strip(child.validate(), (id + 1) + '. ') + question;
+            question = strip(child.validate(), (id + 1) + '. ', LB) + question;
             break;
 
           case 'answers':
@@ -195,22 +230,53 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
 
               // Loop through group of answer properties
               var answer = '';
+              var feedback = '';
+              var tip = '';
               listChild.forEachChild(function (groupChild) {
                 switch (getName(groupChild)) {
                   case 'text':
+                    // Add to end
                     answer += strip(groupChild.validate());
                     break;
 
                   case 'correct':
                     if (groupChild.value) {
+                      // Add to beginning
                       answer = '*' + answer; // Correct answer
                     }
+                    break;
+
+                  case 'chosenFeedback':
+                    // Add to beginning
+                    feedback = strip(groupChild.validate()) + feedback;
+                    break;
+
+                  case 'notChosenFeedback':
+                    // Add to end
+                    feedback += strip(groupChild.validate(), ':');
+                    break;
+
+                  case 'tip':
+                    groupChild.forEachChild(function (tipChild) {
+                      // Replace
+                      tip = strip(tipChild.validate());
+                    });
                     break;
                 }
               });
 
-              // Add answer to question
-              question += answer;
+              if (feedback !== '') {
+                // Add feedback to tip
+                tip += ':' + feedback;
+              }
+              if (tip !== '') {
+                // Add tip to answer
+                answer += ':' + tip;
+              }
+              if (answer !== '') {
+                // Add answer to question
+                question += answer + LB;
+              }
             });
             break;
         }
@@ -307,7 +373,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
 // Add translations
 H5PEditor.language['H5PEditor.QuestionSetTextualEditor'] = {
   'libraryStrings': {
-    'helpText': 'Use an empty line to separate questions.',
+    'helpText': 'Use an empty line to separate each question. In multi choice the first line is the question and the next lines are the answer alternatives. The correct alternatives are prefixed with an asterisk(*), tips and feedback can also be added: *alternative:tip:feedback if chosen:feedback if not chosen.',
     'example': 'What number is PI?\n*3.14\n9.82\n\nWhat is 4 * 0?\n1\n4\n*0',
     'warning': 'Warning! All rich text formatting(incl. line breaks) will be removed. Continue?',
     'unknownQuestionType': 'Non-editable question'
