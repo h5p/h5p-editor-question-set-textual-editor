@@ -13,6 +13,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
     var self = this;
     var entity = list.getEntity();
     var recreation = false;
+    var warned = false;
 
     /**
      * Instructions as to how this editor widget is used.
@@ -29,7 +30,10 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
       placeholder: t('example'),
       on: {
         change: function () {
-          recreateList();
+          if (warned || confirm(t('warning'))) {
+            warned = true;
+            recreateList();
+          }
         }
       }
     });
@@ -46,18 +50,22 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
      */
     var recreateList = function () {
       // Get text input
-      var textLines = $input.val().split("\n");
+      var textLines = $input.val().split(LB);
       textLines.push(''); // Add separator
+
+      // Get current list (to re-use values)
+      var oldQuestions = list.getValue();
 
       // Reset list
       list.removeAllItems();
       recreation = true;
-      /* In the future recreation can be dropped when it's possible to create
-      group structures without it being appended. That way the fields can
-      just be added back to the textarea like a validation. */
+
+      /* In the future it should be possobile to create group structures without
+      appending them. Because then we could drop the recreation process, and
+      just add back to the textarea like a validation. */
 
       // Go through text lines and add statements to list
-      var question, corrects;
+      var question, corrects, numQuestions = 0;
       for (var i = 0; i < textLines.length; i++) {
         var textLine = textLines[i].trim();
         if (textLine === '') {
@@ -74,13 +82,32 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
         $cleaner.text(textLine);
 
         if (question === undefined) {
-          // Add first line as question text
-          question = {
-            library: 'H5P.MultiChoice 1.0',
-            params: {
-              question: textLine
-            }
-          };
+          numQuestions++;
+
+          // Find out if we should re-use values from an old question
+          var matches = textLine.match(/^(\d+)\.\s?(.+)$/);
+          if (matches !== null && matches.length === 3) {
+            // Get old question
+            question = oldQuestions[matches[1] - 1];
+            textLine = matches[2];
+          }
+
+          if (question === undefined) {
+            // Create new question
+            question = {
+              library: 'H5P.MultiChoice 1.0',
+              params: {}
+            };
+          }
+
+          // Update question numbering in textarea
+          textLines[i] = numQuestions + '. ' + textLine;
+
+          // Update question text using first text line
+          question.params.question = textLine;
+
+          // Reset alternatives
+          delete question.params.answers;
           corrects = 0;
         }
         else {
@@ -98,76 +125,128 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
           if (correct) {
             corrects++;
           }
-          if (corrects > 1) {
+          if (question.params.singleAnswer === undefined && corrects > 1) {
             question.params.singleAnswer = false;
           }
         }
       }
 
+      $input.val(textLines.join(LB));
       recreation = false;
+    };
+
+    /**
+     * Find the name of the given field.
+     *
+     * @private
+     * @param {Object} field
+     * @return {String}
+     */
+    var getName = function (field) {
+     return (field.field !== undefined ? field.field.name : field.getName());
+    };
+
+    /**
+     * Strips down value to make it text friendly
+     *
+     * @private
+     * @param {(String|Boolean)} value To work with
+     * @param {String} [prefix] Added before value
+     */
+    var strip = function (value, prefix) {
+      if (!value) {
+        return '';
+      }
+
+      value = value.replace(/(<[^>]*>|\r\n|\n|\r)/gm, '').trim();
+      if (value !== '') {
+        if (prefix) {
+          // Add given prefix to value
+          value = prefix + value;
+        }
+
+        // Add line break to non-empty values
+        value += LB;
+      }
+
+      return value;
+    };
+
+    /**
+     * Get multi choice question in text friendly format.
+     *
+     * @private
+     * @param {Object} item Field instance
+     * @param {Number} id Used for labeling
+     */
+    var addMultiChoice = function (item, id) {
+      var question = '';
+
+      item.forEachChild(function (child) {
+        switch (getName(child)) {
+          case 'question':
+            // Strip value to make it text friendly
+            question = strip(child.validate(), (id + 1) + '. ') + question;
+            break;
+
+          case 'answers':
+            // Loop through list of answers
+            child.forEachChild(function (listChild) {
+
+              // Loop through group of answer properties
+              var answer = '';
+              listChild.forEachChild(function (groupChild) {
+                switch (getName(groupChild)) {
+                  case 'text':
+                    answer += strip(groupChild.validate());
+                    break;
+
+                  case 'correct':
+                    if (groupChild.value) {
+                      answer = '*' + answer; // Correct answer
+                    }
+                    break;
+                }
+              });
+
+              // Add answer to question
+              question += answer;
+            });
+            break;
+        }
+      });
+
+      return question;
     };
 
     /**
      * Add items to the text input.
      *
      * @public
-     * @param {Object} item instance
+     * @param {Object} item Field instance added
+     * @param {Number} id Used for labeling
      */
-    self.addItem = function (item) {
-      if (recreation || !(item instanceof H5PEditor.Library) ||
-          item.currentLibrary !== 'H5P.MultiChoice 1.0') {
-        return; // Not a multi choice question, or recreation in progress.
+    self.addItem = function (item, id) {
+      if (recreation) {
+        return;
       }
 
-      var question = '';
-      item.forEachChild(function (child) {
-        if (child.field !== undefined) {
-          if (child.field.name === 'question') {
-            var html = child.validate();
-            if (html !== false) {
-              // Strip all html tags and remove line breaks.
-              question = html.replace(/(<[^>]*>|\r\n|\n|\r)/gm, '') + '\n' + question;
-            }
-          }
-        }
-        else if (child.getName() === 'answers') {
-          // Loop through list of answers
-          child.forEachChild(function (listChild) {
-            if (!(listChild instanceof H5PEditor.Group)) {
-              return;
-            }
+      var question;
 
-            // Loop through group of answer properties
-            var answer = '';
-            listChild.forEachChild(function (groupChild) {
-              if (groupChild.field === undefined) {
-                return; // Ignore
-              }
+      // Get question text formatting
+      switch (item.currentLibrary)  {
+        case 'H5P.MultiChoice 1.0':
+          question = addMultiChoice(item, id);
+          break;
 
-              switch (groupChild.field.name) {
-                case 'text':
-                  var html = groupChild.validate();
-                  if (html !== false) {
-                    // Strip all html tags and remove line breaks.
-                    answer = html.replace(/(<[^>]*>|\r\n|\n|\r)/gm, '') + '\n';
-                  }
-                  break;
+        default:
+          // Not multi choice question
+          question = (id + 1) + '. ' + t('unknownQuestionType') + LB;
+          break;
+      }
 
-                case 'correct':
-                  if (groupChild.value) {
-                    answer = '*' + answer; // Correct answer
-                  }
-                  break;
-              }
-            });
-
-            // Add answer to question
-            question += answer;
-          });
-        }
-      });
-
-      if (question !== '') {
+      // Add question to text field
+      if (question) {
         // Convert all escaped html to text
         $cleaner.html(question);
         question = $cleaner.text();
@@ -175,7 +254,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
         // Append text
         var current = $input.val();
         if (current !== '') {
-          current += '\n';
+          current += LB;
         }
         $input.val(current + question);
       }
@@ -213,6 +292,14 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
     return H5PEditor.t('H5PEditor.QuestionSetTextualEditor', identifier, placeholders);
   };
 
+  /**
+   * Line break.
+   *
+   * @private
+   * @constant {String}
+   */
+  var LB = '\n';
+
   return QuestionSetTextualEditor;
 })(H5P.jQuery);
 
@@ -221,6 +308,8 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
 H5PEditor.language['H5PEditor.QuestionSetTextualEditor'] = {
   'libraryStrings': {
     'helpText': 'Use an empty line to separate questions.',
-    'example': 'What number is PI?\n*3.14\n9.82\n\nWhat is 4 * 0?\n1\n4\n*0'
+    'example': 'What number is PI?\n*3.14\n9.82\n\nWhat is 4 * 0?\n1\n4\n*0',
+    'warning': 'Warning! All rich text formatting(incl. line breaks) will be removed. Continue?',
+    'unknownQuestionType': 'Non-editable question'
   }
 };
