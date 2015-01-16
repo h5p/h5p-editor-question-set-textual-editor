@@ -13,7 +13,6 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
     var self = this;
     var entity = list.getEntity();
     var recreation = false;
-    var warned = false;
 
     /**
      * Instructions as to how this editor widget is used.
@@ -111,7 +110,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
           if (question === undefined) {
             // Create new question
             question = {
-              library: 'H5P.MultiChoice 1.0',
+              library: 'H5P.MultiChoice 1.1',
               params: {}
             };
           }
@@ -301,7 +300,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
 
       // Get question text formatting
       switch (item.currentLibrary)  {
-        case 'H5P.MultiChoice 1.0':
+        case 'H5P.MultiChoice 1.1':
           question = addMultiChoice(item, id);
           break;
 
@@ -309,6 +308,8 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
           // Not multi choice question
           question = (id + 1) + '. ' + t('unknownQuestionType') + LB;
           break;
+
+        case undefined:
       }
 
       // Add question to text field
@@ -365,6 +366,11 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
    * @constant {String}
    */
   var LB = '\n';
+
+  /**
+   * Warn user the first time he uses the editor.
+   */
+  var warned = false;
 
   return QuestionSetTextualEditor;
 })(H5P.jQuery);
