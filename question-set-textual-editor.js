@@ -30,15 +30,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
       placeholder: t('example'),
       on: {
         change: function () {
-          if (shouldWarn && !warned) {
-            if (confirm(t('warning'))) {
-              warned = true;
-              recreateList();
-            }
-          }
-          else {
-            recreateList();
-          }
+          recreateList();
         }
       }
     });
@@ -58,7 +50,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
         return '';
       }
 
-      return value.trim();
+      return value.trim().replace('¤', ':');
     };
 
     /**
@@ -135,35 +127,37 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
           // Add line as answer
 
           // Split up answer line according to format
-          matches = textLine.match(/^(\*?)([^:]*)(:([^:]*))?(:([^:]*))?(:([^:]*))?$/);
-          if (matches && matches.length === 9) {
-            var text = trim(matches[2]);
-            if (text) {
+          var parts = textLine.replace(/\\:/g, '¤').split(':', 4);
+          var correct = false;
 
-              if (question.params.answers === undefined) {
-                // Create new set of answers
-                question.params.answers = [];
-              }
+          // Determine if this is a correct answer
+          parts[0] = trim(parts[0]);
+          if (parts[0].substr(0, 1) === '*') {
+            correct = true;
+            parts[0] = trim(parts[0].substr(1, parts[0].length));
+          }
 
-              // Determine if this is a correct answer
-              var correct = (matches[1] === '*');
+          if (parts[0] !== '') {
+            if (question.params.answers === undefined) {
+              // Create new set of answers
+              question.params.answers = [];
+            }
 
-              // Create new answer and add to question
-              question.params.answers.push({
-                text: text,
-                correct: correct,
-                chosenFeedback: trim(matches[6]),
-                notChosenFeedback: trim(matches[8]),
-                tip: trim(matches[4])
-              });
+            // Create new answer and add to question
+            question.params.answers.push({
+              text: parts[0],
+              correct: correct,
+              chosenFeedback: trim(parts[2]),
+              notChosenFeedback: trim(parts[3]),
+              tip: trim(parts[1])
+            });
 
-              if (correct) {
-                corrects++; // Count number of correct answers
-              }
-              if (question.params.singleAnswer === undefined && corrects > 1) {
-                // Question has multiple correct answers.
-                question.params.singleAnswer = false;
-              }
+            if (correct) {
+              corrects++; // Count number of correct answers
+            }
+            if (question.params.singleAnswer === undefined && corrects > 1) {
+              // Question has multiple correct answers.
+              question.params.singleAnswer = false;
             }
           }
         }
@@ -241,7 +235,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
                 switch (getName(groupChild)) {
                   case 'text':
                     // Add to end
-                    answer += strip(groupChild.validate());
+                    answer += strip(groupChild.validate()).replace(/:/g, '\\:');
                     break;
 
                   case 'correct':
@@ -253,18 +247,18 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
 
                   case 'chosenFeedback':
                     // Add to beginning
-                    feedback = strip(groupChild.validate()) + feedback;
+                    feedback = strip(groupChild.validate()).replace(/:/g, '\\:') + feedback;
                     break;
 
                   case 'notChosenFeedback':
                     // Add to end
-                    feedback += strip(groupChild.validate(), ':');
+                    feedback += strip(groupChild.validate().replace(/:/g, '\\:'), ':');
                     break;
 
                   case 'tip':
                     groupChild.forEachChild(function (tipChild) {
                       // Replace
-                      tip = strip(tipChild.validate());
+                      tip = strip(tipChild.validate()).replace(/:/g, '\\:');
                     });
                     break;
                 }
@@ -345,6 +339,10 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
      */
     self.appendTo = function ($container) {
       $input.appendTo($container);
+      if (shouldWarn && !warned) {
+        alert(t('warning'));
+        warned = true;
+      }
     };
 
     /**
@@ -391,7 +389,7 @@ H5PEditor.language['H5PEditor.QuestionSetTextualEditor'] = {
   'libraryStrings': {
     'helpText': 'Use an empty line to separate each question. In multi choice the first line is the question and the next lines are the answer alternatives. The correct alternatives are prefixed with an asterisk(*), tips and feedback can also be added: *alternative:tip:feedback if chosen:feedback if not chosen.',
     'example': 'What number is PI?\n*3.14\n9.82\n\nWhat is 4 * 0?\n1\n4\n*0',
-    'warning': 'Warning! All rich text formatting(incl. line breaks) will be removed. Continue?',
+    'warning': 'Warning! If you change the tasks in the textual editor all rich text formatting(incl. line breaks) will be removed.',
     'unknownQuestionType': 'Non-editable question'
   }
 };
