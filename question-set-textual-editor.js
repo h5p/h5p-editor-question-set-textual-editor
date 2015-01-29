@@ -91,7 +91,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
         }
 
         // Convert text to html
-        $cleaner.text(textLine);
+        textLine = $cleaner.text(textLine).html();
 
         var matches;
         if (question === undefined) {
@@ -116,12 +116,14 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
           // Update question numbering in textarea
           textLines[i] = numQuestions + '. ' + textLine;
 
-          // Update question text using first text line
-          question.params.question = textLine;
+          if (question.library === 'H5P.MultiChoice 1.1') {
+            // Update question text using first text line
+            question.params.question = textLine;
 
-          // Reset alternatives
-          delete question.params.answers;
-          corrects = 0;
+            // Reset alternatives
+            delete question.params.answers;
+            corrects = 0;
+          }
         }
         else {
           // Add line as answer
