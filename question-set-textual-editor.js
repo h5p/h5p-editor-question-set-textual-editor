@@ -177,7 +177,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
      * @return {String}
      */
     var getName = function (field) {
-     return (field.field !== undefined ? field.field.name : field.getName());
+     return (field.getName !== undefined ? field.getName() : field.field.name);
     };
 
     /**
