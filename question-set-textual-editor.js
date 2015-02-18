@@ -157,9 +157,9 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
             if (correct) {
               corrects++; // Count number of correct answers
             }
-            if (question.params.singleAnswer === undefined && corrects > 1) {
+            if (question.params.behaviour.singleAnswer === undefined && corrects > 1) {
               // Question has multiple correct answers.
-              question.params.singleAnswer = false;
+              question.params.behaviour.singleAnswer = false;
             }
           }
         }
