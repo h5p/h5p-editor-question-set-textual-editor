@@ -19,7 +19,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
      * Instructions as to how this editor widget is used.
      * @public
      */
-    self.helpText = t('helpText');
+    self.helpText = t('helpText') + '<pre>' + t('example') + '</pre>';
 
     // Create list html
     var $input = $('<textarea/>', {
@@ -391,7 +391,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
 // Add translations
 H5PEditor.language['H5PEditor.QuestionSetTextualEditor'] = {
   'libraryStrings': {
-    'helpText': 'Use an empty line to separate each question. In multi choice the first line is the question and the next lines are the answer alternatives. The correct alternatives are prefixed with an asterisk(*), tips and feedback can also be added: *alternative:tip:feedback if chosen:feedback if not chosen.',
+    'helpText': 'Use an empty line to separate each question. In multi choice the first line is the question and the next lines are the answer alternatives. The correct alternatives are prefixed with an asterisk(*), tips and feedback can also be added: *alternative:tip:feedback if chosen:feedback if not chosen. Example:',
     'example': 'What number is PI?\n*3.14\n9.82\n\nWhat is 4 * 0?\n1\n4\n*0',
     'warning': 'Warning! If you change the tasks in the textual editor all rich text formatting(incl. line breaks) will be removed.',
     'unknownQuestionType': 'Non-editable question'
