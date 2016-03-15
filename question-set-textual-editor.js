@@ -108,7 +108,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
           if (question === undefined) {
             // Create new question
             question = {
-              library: 'H5P.MultiChoice 1.4',
+              library: 'H5P.MultiChoice 1.5',
               params: {}
             };
           }
@@ -116,7 +116,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
           // Update question numbering in textarea
           textLines[i] = numQuestions + '. ' + textLine;
 
-          if (question.library === 'H5P.MultiChoice 1.4') {
+          if (question.library === 'H5P.MultiChoice 1.5') {
             // Update question text using first text line
             question.params.question = textLine;
 
@@ -304,7 +304,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
 
       // Get question text formatting
       switch (item.currentLibrary)  {
-        case 'H5P.MultiChoice 1.4':
+        case 'H5P.MultiChoice 1.5':
           question = addMultiChoice(item, id);
           break;
 
