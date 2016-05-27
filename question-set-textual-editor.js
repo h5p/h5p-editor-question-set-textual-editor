@@ -108,7 +108,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
           if (question === undefined) {
             // Create new question
             question = {
-              library: 'H5P.MultiChoice 1.6',
+              library: 'H5P.MultiChoice 1.7',
               params: {}
             };
           }
@@ -116,7 +116,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
           // Update question numbering in textarea
           textLines[i] = numQuestions + '. ' + textLine;
 
-          if (question.library === 'H5P.MultiChoice 1.6') {
+          if (question.library === 'H5P.MultiChoice 1.7') {
             // Update question text using first text line
             question.params.question = textLine;
 
