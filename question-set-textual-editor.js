@@ -304,7 +304,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
 
       // Get question text formatting
       switch (item.currentLibrary)  {
-        case 'H5P.MultiChoice 1.6':
+        case 'H5P.MultiChoice 1.7':
           question = addMultiChoice(item, id);
           break;
 
