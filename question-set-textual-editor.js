@@ -149,9 +149,11 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
             question.params.answers.push({
               text: parts[0],
               correct: correct,
-              chosenFeedback: trim(parts[2]),
-              notChosenFeedback: trim(parts[3]),
-              tip: trim(parts[1])
+              tipsAndFeedback: {
+                tip: trim(parts[1]),
+                chosenFeedback: trim(parts[2]),
+                notChosenFeedback: trim(parts[3])
+              }
             });
 
             if (correct) {
