@@ -251,21 +251,25 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
                     }
                     break;
 
-                  case 'chosenFeedback':
-                    // Add to beginning
-                    feedback = strip(groupChild.validate()).replace(/:/g, '\\:') + feedback;
-                    break;
+                  case 'tipsAndFeedback':
+                    groupChild.forEachChild(function(tipOrFeedback){
+                      switch (getName(tipOrFeedback)) {
+                        case 'chosenFeedback':
+                          // Add to beginning
+                          feedback = strip(tipOrFeedback.validate()).replace(/:/g, '\\:') + feedback;
+                          break;
 
-                  case 'notChosenFeedback':
-                    // Add to end
-                    feedback += strip(groupChild.validate().replace(/:/g, '\\:'), ':');
-                    break;
+                        case 'notChosenFeedback':
+                          // Add to end
+                          feedback += strip(tipOrFeedback.validate().replace(/:/g, '\\:'), ':');
+                          break;
 
-                  case 'tip':
-                    groupChild.forEachChild(function (tipChild) {
-                      // Replace
-                      tip = strip(tipChild.validate()).replace(/:/g, '\\:');
+                        case 'tip':
+                          tip = strip(tipOrFeedback.validate()).replace(/:/g, '\\:');
+                          break;
+                      }
                     });
+
                     break;
                 }
               });
@@ -282,6 +286,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
                 // Add answer to question
                 question += answer + LB;
               }
+
             });
             break;
         }
