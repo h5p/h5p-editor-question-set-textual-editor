@@ -11,9 +11,5 @@
     "majorVersion": 1,
     "minorVersion": 4
   },
-  "preloadedJs": [
-    {
-      "path": "question-set-textual-editor.js"
-    }
-  ]
+  "preloadedJs": [{"path": "src/scripts/question-set-textual-editor.js"}]
 }

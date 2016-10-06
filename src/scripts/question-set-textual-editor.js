@@ -1,5 +1,5 @@
 /** @namespace H5PEditor */
-var H5PEditor = H5PEditor || {};
+var H5PEditor = H5PEditor || { language: {}, t: function(s){ return s; }};
 
 H5PEditor.QuestionSetTextualEditor = (function ($) {
 
@@ -11,7 +11,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
    */
   function QuestionSetTextualEditor(list) {
     var self = this;
-    var entity = list.getEntity();
+    //var entity = list.getEntity();
     var recreation = false;
     var shouldWarn = false;
 
@@ -63,7 +63,6 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
     var recreateList = function () {
       // Get text input
       var textLines = $input.val().split(LB);
-      textLines.push(''); // Add separator
 
       // Get current list (to re-use values)
       var oldQuestions = list.getValue();
@@ -72,19 +71,38 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
       list.removeAllItems();
       recreation = true;
 
+      // Parse to questions, and add to list
+      var questions = self.parseTextInput(textLines, oldQuestions);
+      questions.forEach(list.addItem);
+
+      $input.val(textLines.join(LB));
+      recreation = false;
+    };
+
+    /**
+     *
+     *
+     * @param {String[]} textLines
+     * @param {Array} oldQuestions
+     * @returns {Array}
+     */
+    self.parseTextInput = function(textLines, oldQuestions){
+      textLines.push(''); // Add separator
+
+      var questions = [];
       /* In the future it should be possobile to create group structures without
-      appending them. Because then we could drop the recreation process, and
-      just add back to the textarea like a validation. */
+       appending them. Because then we could drop the recreation process, and
+       just add back to the textarea like a validation. */
 
       // Go through text lines and add statements to list
-      var question, corrects, numQuestions = 0;
+      var question, corrects = 0, numQuestions = 0;
       for (var i = 0; i < textLines.length; i++) {
         var textLine = textLines[i].trim();
         if (textLine === '') {
           // Question seperator
           if (question !== undefined) {
             // Add previous question to list
-            list.addItem(question);
+            questions.push(question);
             question = undefined;
           }
           continue;
@@ -169,8 +187,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
         }
       }
 
-      $input.val(textLines.join(LB));
-      recreation = false;
+      return questions;
     };
 
     /**
@@ -219,7 +236,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
      * @param {Object} item Field instance
      * @param {Number} id Used for labeling
      */
-    var addMultiChoice = function (item, id) {
+    self.addMultiChoice = function (item, id) {
       var question = '';
 
       item.forEachChild(function (child) {
@@ -312,7 +329,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
       // Get question text formatting
       switch (item.currentLibrary)  {
         case 'H5P.MultiChoice 1.8':
-          question = addMultiChoice(item, id);
+          question = self.addMultiChoice(item, id);
           break;
 
         default:
