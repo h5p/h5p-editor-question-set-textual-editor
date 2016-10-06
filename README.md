@@ -3,6 +3,18 @@ H5P Editor Question Set Textual Editor
 
 Makes it fast and easy to create summary tasks through text input.
 
+## Getting started
+
+Grab all the modules:
+```javascript
+npm install
+```
+
+Run tests:
+```javscript
+npm test
+```
+
 ## License
 
 (The MIT License)
