@@ -13,7 +13,7 @@
     "library",
     "editor"
   ],
-  "author": "tajakobsen",
+  "author": "Joubel AS",
   "license": "MIT",
   "devDependencies": {
     "autoprefixer": "^6.4.0",
