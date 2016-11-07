@@ -1,7 +1,7 @@
 import 'expose?H5P!exports?H5P!h5p-view';
 
 var H5PEditor = require("exports?H5PEditor!../src/scripts/question-set-textual-editor");
-var Library = require("exports?Library!./fake-library");
+var Library = require("exports?FakeLibrary!./fake-library");
 
 describe("Question Set Textual Editor", function () {
   var editor;
