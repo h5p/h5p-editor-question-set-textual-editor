@@ -1,8 +1,7 @@
 /** @namespace H5PEditor */
-var H5PEditor = H5PEditor || { language: {}, t: function(s){ return s; }};
+var H5PEditor = H5PEditor || {};
 
 H5PEditor.QuestionSetTextualEditor = (function ($) {
-
   /**
    * Creates a text input widget for editing question sets
    *
@@ -95,7 +94,10 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
        just add back to the textarea like a validation. */
 
       // Go through text lines and add statements to list
-      var question, corrects = 0, numQuestions = 0;
+      var question,
+        corrects = 0,
+        numQuestions = 0;
+
       for (var i = 0; i < textLines.length; i++) {
         var textLine = textLines[i].trim();
         if (textLine === '') {
@@ -392,7 +394,11 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
    * @returns {String}
    */
   var t = function (identifier, placeholders) {
-    return H5PEditor.t('H5PEditor.QuestionSetTextualEditor', identifier, placeholders);
+    if(H5PEditor.t !== undefined) {
+      return H5PEditor.t('H5PEditor.QuestionSetTextualEditor', identifier, placeholders);
+    } else {
+      console.warn('"H5PEditor.t" is not defined.');
+    }
   };
 
   /**
@@ -413,6 +419,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
 
 
 // Add translations
+H5PEditor.language = H5PEditor.language || {};
 H5PEditor.language['H5PEditor.QuestionSetTextualEditor'] = {
   'libraryStrings': {
     'helpText': 'Use an empty line to separate each question. In multi choice the first line is the question and the next lines are the answer alternatives. The correct alternatives are prefixed with an asterisk(*), tips and feedback can also be added: *alternative:tip:feedback if chosen:feedback if not chosen. Example:',
