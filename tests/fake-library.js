@@ -1,12 +1,12 @@
-var FakeLibrary = function (name, val) {
+var FakeLibrary = function (name, value) {
   var self = this;
 
   self.name = name;
-  self.val = val;
+  self.value = value;
 
   self.forEachChild = function (task) {
-    for (var childName in self.val) {
-      var child = new FakeLibrary(childName, self.val[childName]);
+    for (var childName in self.value) {
+      var child = new FakeLibrary(childName, self.value[childName]);
 
       if (task(child, childName)) {
         return;
@@ -19,6 +19,6 @@ var FakeLibrary = function (name, val) {
   };
 
   self.validate = function () {
-    return self.val;
+    return self.value;
   }
 };
