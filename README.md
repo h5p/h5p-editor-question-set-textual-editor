@@ -1,6 +1,9 @@
 H5P Editor Question Set Textual Editor
 ==========
 
+
+[![Build Status](https://travis-ci.org/h5p/h5p-editor-question-set-textual-editor.svg?branch=unittests)](https://travis-ci.org/h5p/h5p-editor-question-set-textual-editor)
+
 Makes it fast and easy to create summary tasks through text input.
 
 ## Getting started
