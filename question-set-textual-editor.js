@@ -3,6 +3,8 @@ var H5PEditor = H5PEditor || {};
 
 H5PEditor.QuestionSetTextualEditor = (function ($) {
 
+  var MULTI_CHOICE_LIBRARY = 'H5P.MultiChoice 1.9';
+
   /**
    * Creates a text input widget for editing question sets
    *
@@ -108,7 +110,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
           if (question === undefined) {
             // Create new question
             question = {
-              library: 'H5P.MultiChoice 1.8',
+              library: MULTI_CHOICE_LIBRARY,
               params: {}
             };
           }
@@ -116,7 +118,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
           // Update question numbering in textarea
           textLines[i] = numQuestions + '. ' + textLine;
 
-          if (question.library === 'H5P.MultiChoice 1.8') {
+          if (question.library === MULTI_CHOICE_LIBRARY) {
             // Update question text using first text line
             question.params.question = textLine;
 
@@ -311,7 +313,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
 
       // Get question text formatting
       switch (item.currentLibrary)  {
-        case 'H5P.MultiChoice 1.8':
+        case MULTI_CHOICE_LIBRARY:
           question = addMultiChoice(item, id);
           break;
 
