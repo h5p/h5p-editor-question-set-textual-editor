@@ -19,6 +19,6 @@ var FakeLibrary = function (name, value) {
   };
 
   self.validate = function () {
-    return self.value;
+    return self.value || '';
   }
 };

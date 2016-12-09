@@ -15,6 +15,11 @@ Run tests:
 npm test
 ```
 
+Build distribution
+```javscript
+npm run build
+```
+
 ## License
 
 (The MIT License)

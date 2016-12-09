@@ -1,18 +1,60 @@
-/** @namespace H5PEditor */
-var H5PEditor = H5PEditor || {};
+import TextParser from './text-parser'
 
-H5PEditor.QuestionSetTextualEditor = (function ($) {
+var $ = H5P.jQuery;
+var H5PEditor = H5PEditor || window.H5PEditor || {};
+// Add translations
+H5PEditor.language = H5PEditor.language || {};
+H5PEditor.language['H5PEditor.QuestionSetTextualEditor'] = {
+  'libraryStrings': {
+    'helpText': 'Use an empty line to separate each question. In multi choice the first line is the question and the next lines are the answer alternatives. The correct alternatives are prefixed with an asterisk(*), tips and feedback can also be added: *alternative:tip:feedback if chosen:feedback if not chosen. Example:',
+    'example': 'What number is PI?\n*3.14\n9.82\n\nWhat is 4 * 0?\n1\n4\n*0',
+    'warning': 'Warning! If you change the tasks in the textual editor all rich text formatting(incl. line breaks) will be removed.',
+    'unknownQuestionType': 'Non-editable question'
+  }
+};
+
+/**
+ * Helps localize strings.
+ *
+ * @private
+ * @param {String} identifier
+ * @param {Object} [placeholders]
+ * @returns {String}
+ */
+var t = function (identifier, placeholders) {
+  if(H5PEditor.t !== undefined) {
+    return H5PEditor.t('H5PEditor.QuestionSetTextualEditor', identifier, placeholders);
+  }
+};
+
+/**
+ * Line break.
+ *
+ * @private
+ * @constant {String}
+ */
+var LB = '\n';
+
+/**
+ * Warn user the first time he uses the editor.
+ */
+var warned = false;
+
+export default class QuestionSetTextualEditor {
   /**
    * Creates a text input widget for editing question sets
    *
    * @class
-   * @param {List} list
+   * @param {object[]} list
    */
-  function QuestionSetTextualEditor(list) {
-    var self = this;
+  constructor(list) {
+    const self = this;
+
     //var entity = list.getEntity();
     var recreation = false;
     var shouldWarn = false;
+
+    self.textParser = new TextParser();
 
     /**
      * Instructions as to how this editor widget is used.
@@ -60,136 +102,66 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
      * @private
      */
     var recreateList = function () {
-      // Get text input
-      var textLines = $input.val().split(LB);
-
       // Get current list (to re-use values)
       var oldQuestions = list.getValue();
 
       // Reset list
       list.removeAllItems();
-      recreation = true;
 
       // Parse to questions, and add to list
-      var questions = self.parseTextInput(textLines, oldQuestions);
-      questions.forEach(list.addItem);
-
-      $input.val(textLines.join(LB));
-      recreation = false;
+      self.textParser.parse($input.val())
+        .forEach(function(entry){
+          let item = self.recycleQuestion(oldQuestions, entry);
+          list.addItem(item);
+        });
     };
 
     /**
+     * Find out if we should re-use values from an old question
      *
-     *
-     * @param {String[]} textLines
-     * @param {Array} oldQuestions
-     * @returns {Array}
+     * @param {MultiChoiceQuestion[]} oldQuestions
+     * @param {MultiChoiceQuestion} question
+     * @return {MultiChoiceQuestion}
      */
-    self.parseTextInput = function(textLines, oldQuestions){
-      textLines.push(''); // Add separator
+    self.recycleQuestion = function(oldQuestions, question){
+      const parts = self.splitQuestionText(question.params.question);
 
-      var questions = [];
-      /* In the future it should be possobile to create group structures without
-       appending them. Because then we could drop the recreation process, and
-       just add back to the textarea like a validation. */
+      if (self.canRecycleQuestion(parts)) {
+        const index = parts[1] - 1;
+        const text = parts[2];
+        const recycledQuestion = oldQuestions[index] || question; // picks out the numbered question
 
-      // Go through text lines and add statements to list
-      var question,
-        corrects = 0,
-        numQuestions = 0;
-
-      for (var i = 0; i < textLines.length; i++) {
-        var textLine = textLines[i].trim();
-        if (textLine === '') {
-          // Question seperator
-          if (question !== undefined) {
-            // Add previous question to list
-            questions.push(question);
-            question = undefined;
-          }
-          continue;
+        if(recycledQuestion.library === 'H5P.MultiChoice 1.8'){
+          recycledQuestion.params.question = text;
+          recycledQuestion.params.answers = question.params.answers;
+          recycledQuestion.params.behaviour.singleAnswer = question.params.behaviour.singleAnswer;
         }
 
-        // Convert text to html
-        textLine = $cleaner.text(textLine).html();
-
-        var matches;
-        if (question === undefined) {
-          numQuestions++;
-
-          // Find out if we should re-use values from an old question
-          matches = textLine.match(/^(\d+)\.\s?(.+)$/);
-          if (matches !== null && matches.length === 3) {
-            // Get old question
-            question = oldQuestions[matches[1] - 1];
-            textLine = matches[2];
-          }
-
-          if (question === undefined) {
-            // Create new question
-            question = {
-              library: 'H5P.MultiChoice 1.8',
-              params: {}
-            };
-          }
-
-          // Update question numbering in textarea
-          textLines[i] = numQuestions + '. ' + textLine;
-
-          if (question.library === 'H5P.MultiChoice 1.8') {
-            // Update question text using first text line
-            question.params.question = textLine;
-
-            // Reset alternatives
-            delete question.params.answers;
-            corrects = 0;
-          }
-        }
-        else {
-          // Add line as answer
-
-          // Split up answer line according to format
-          var parts = textLine.replace(/\\:/g, '¤').split(':', 4);
-          var correct = false;
-
-          // Determine if this is a correct answer
-          parts[0] = trim(parts[0]);
-          if (parts[0].substr(0, 1) === '*') {
-            correct = true;
-            parts[0] = trim(parts[0].substr(1, parts[0].length));
-          }
-
-          if (parts[0] !== '') {
-            if (question.params.answers === undefined) {
-              // Create new set of answers
-              question.params.answers = [];
-            }
-
-            // Create new answer and add to question
-            question.params.answers.push({
-              text: parts[0],
-              correct: correct,
-              tipsAndFeedback: {
-                tip: trim(parts[1]),
-                chosenFeedback: trim(parts[2]),
-                notChosenFeedback: trim(parts[3])
-              }
-            });
-
-            if (correct) {
-              corrects++; // Count number of correct answers
-            }
-            if (question.params.behaviour === undefined) {
-              question.params.behaviour = {singleAnswer: true};
-            }
-            if (corrects > 1) {
-              question.params.behaviour.singleAnswer = false;
-            }
-          }
-        }
+        return recycledQuestion;
       }
+      else {
+        return question;
+      }
+    };
 
-      return questions;
+    /**
+     * Checks if the question is recyclable
+     *
+     * @param {String|Number} arr
+     * @return {boolean}
+     */
+    self.canRecycleQuestion = function(arr){
+      return arr !== null && arr.length === 3;
+    };
+
+    /**
+     * Splits a question string into component parts
+     *
+     * @param {string} questionText
+     * @return {*|Array|{index: number, input: string}}
+     */
+    self.splitQuestionText = function(questionText){
+      return questionText.match(/^(\d+)\.\s?(.+)$/);
     };
 
     /**
@@ -200,7 +172,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
      * @return {String}
      */
     var getName = function (field) {
-     return (field.getName !== undefined ? field.getName() : field.field.name);
+      return (field.getName !== undefined ? field.getName() : field.field.name);
     };
 
     /**
@@ -275,7 +247,7 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
                       switch (getName(tipOrFeedback)) {
                         case 'chosenFeedback':
                           // Add to beginning
-                          feedback = strip(tipOrFeedback.validate()).replace(/:/g, '\\:') + feedback;
+                          feedback = strip(tipOrFeedback.validate()).replace(/:/g, '\\:') + (feedback == undefined ? '' : feedback);
                           break;
 
                         case 'notChosenFeedback':
@@ -384,47 +356,4 @@ H5PEditor.QuestionSetTextualEditor = (function ($) {
       $input.remove();
     };
   }
-
-  /**
-   * Helps localize strings.
-   *
-   * @private
-   * @param {String} identifier
-   * @param {Object} [placeholders]
-   * @returns {String}
-   */
-  var t = function (identifier, placeholders) {
-    if(H5PEditor.t !== undefined) {
-      return H5PEditor.t('H5PEditor.QuestionSetTextualEditor', identifier, placeholders);
-    } else {
-      console.warn('"H5PEditor.t" is not defined.');
-    }
-  };
-
-  /**
-   * Line break.
-   *
-   * @private
-   * @constant {String}
-   */
-  var LB = '\n';
-
-  /**
-   * Warn user the first time he uses the editor.
-   */
-  var warned = false;
-
-  return QuestionSetTextualEditor;
-})(H5P.jQuery);
-
-
-// Add translations
-H5PEditor.language = H5PEditor.language || {};
-H5PEditor.language['H5PEditor.QuestionSetTextualEditor'] = {
-  'libraryStrings': {
-    'helpText': 'Use an empty line to separate each question. In multi choice the first line is the question and the next lines are the answer alternatives. The correct alternatives are prefixed with an asterisk(*), tips and feedback can also be added: *alternative:tip:feedback if chosen:feedback if not chosen. Example:',
-    'example': 'What number is PI?\n*3.14\n9.82\n\nWhat is 4 * 0?\n1\n4\n*0',
-    'warning': 'Warning! If you change the tasks in the textual editor all rich text formatting(incl. line breaks) will be removed.',
-    'unknownQuestionType': 'Non-editable question'
-  }
-};
+}
