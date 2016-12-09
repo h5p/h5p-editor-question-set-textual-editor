@@ -25,7 +25,7 @@ describe("Question Set Textual Editor", function () {
     ];
 
     data = {
-      library:'H5P.MultiChoice 1.8',
+      library:'H5P.MultiChoice 1.9',
       params: {
         question: "Question one",
         answers: [{

@@ -3,8 +3,11 @@ export default class TextParser {
    * Creates a text input widget for editing question sets
    * @constructor
    * @class
+   *
+   * @param {string} multiChoiceLibrary The multichoice library to use
    */
-  constructor() {
+  constructor(multiChoiceLibrary) {
+    this.multiChoiceLibrary = multiChoiceLibrary;
     // Used to convert HTML to text and vice versa
     this.$cleaner = H5P.jQuery('<div/>');
   }
@@ -75,7 +78,7 @@ export default class TextParser {
      * @property {Boolean} params.behaviour.singleAnswer
      */
     return {
-      library: 'H5P.MultiChoice 1.8',
+      library: this.multiChoiceLibrary,
       params: {
         question: this.cleanTextLine(textLine),
         answers: [],

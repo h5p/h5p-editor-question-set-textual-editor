@@ -36,6 +36,12 @@ var t = function (identifier, placeholders) {
 var LB = '\n';
 
 /**
+ * Multi Choice library to use
+ * @type {string}
+ */
+const MULTI_CHOICE_LIBRARY = 'H5P.MultiChoice 1.9';
+
+/**
  * Warn user the first time he uses the editor.
  */
 var warned = false;
@@ -54,7 +60,7 @@ export default class QuestionSetTextualEditor {
     var recreation = false;
     var shouldWarn = false;
 
-    self.textParser = new TextParser();
+    self.textParser = new TextParser(MULTI_CHOICE_LIBRARY);
 
     /**
      * Instructions as to how this editor widget is used.
@@ -131,7 +137,7 @@ export default class QuestionSetTextualEditor {
         const text = parts[2];
         const recycledQuestion = oldQuestions[index] || question; // picks out the numbered question
 
-        if(recycledQuestion.library === 'H5P.MultiChoice 1.8'){
+        if(recycledQuestion.library === MULTI_CHOICE_LIBRARY){
           recycledQuestion.params.question = text;
           recycledQuestion.params.answers = question.params.answers;
           recycledQuestion.params.behaviour.singleAnswer = question.params.behaviour.singleAnswer;
@@ -302,7 +308,7 @@ export default class QuestionSetTextualEditor {
 
       // Get question text formatting
       switch (item.currentLibrary)  {
-        case 'H5P.MultiChoice 1.8':
+        case MULTI_CHOICE_LIBRARY:
           question = self.addMultiChoice(item, id);
           break;
 
