@@ -1,5 +1,3 @@
-// Karma configuration
-// Generated on Fri Aug 05 2016 15:01:10 GMT+0200 (Vest-Europa (sommertid))
 var path = require('path');
 
 module.exports = function(config) {
@@ -17,7 +15,7 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'tests/**/*.js'
+      'tests/*.js'
     ],
 
 

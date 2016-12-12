@@ -5,8 +5,8 @@ window.H5PEditor = {};
 window.H5PEditor.t = function(s){ return s; };
 
 import QuestionSetTextualEditor from '../src/scripts/question-set-textual-editor';
-import TextParser from '../src/scripts/text-parser'
-const Library = require("exports?FakeLibrary!./fake-library");
+import TextParser from '../src/scripts/text-parser';
+import Library from './fakes/fake-library';
 
 
 describe("Question Set Textual Editor", function () {

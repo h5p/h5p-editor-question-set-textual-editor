@@ -33,7 +33,7 @@ var t = function (identifier, placeholders) {
  * @private
  * @constant {String}
  */
-var LB = '\n';
+const LB = '\n';
 
 /**
  * Multi Choice library to use
@@ -84,21 +84,6 @@ export default class QuestionSetTextualEditor {
 
     // Used to convert HTML to text and vice versa
     var $cleaner = $('<div/>');
-
-    /**
-     * Clever variant of trim that can trim undefined values.
-     *
-     * @private
-     * @param {String} value
-     * @returns {String} Trimmed string, empty string if value is undefined.
-     */
-    var trim = function (value) {
-      if (value === undefined) {
-        return '';
-      }
-
-      return value.trim().replace('¤', ':');
-    };
 
     /**
      * Clears all items from the list, processes the text and add the items
