@@ -13,7 +13,7 @@
   },
   "preloadedJs": [
     {
-      "path": "question-set-textual-editor.js"
+      "path": "dist/question-set-textual-editor.js"
     }
   ]
 }
