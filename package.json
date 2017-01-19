@@ -1,0 +1,39 @@
+{
+  "name": "questionSetTextualEditor",
+  "version": "1.1.2",
+  "description": "Makes it fast and easy to create summary tasks through text input",
+  "scripts": {
+    "test": "karma start",
+    "build": "webpack"
+  },
+  "keywords": [
+    "h5p",
+    "library",
+    "editor"
+  ],
+  "author": "Joubel AS",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-cli": "^6.6.5",
+    "babel-core": "^6.13.2",
+    "babel-loader": "^6.2.4",
+    "babel-plugin-transform-object-assign": "^6.8.0",
+    "babel-preset-es2015": "^6.6.0",
+    "babel-runtime": "^6.11.6",
+    "exports-loader": "^0.6.3",
+    "expose-loader": "^0.7.1",
+    "extract-text-webpack-plugin": "^1.0.1",
+    "file-loader": "^0.9.0",
+    "h5p-view": "^1.0.0",
+    "imports-loader": "^0.7.0",
+    "jasmine-core": "^2.4.1",
+    "json-loader": "^0.5.4",
+    "karma": "^1.1.2",
+    "karma-chrome-launcher": "^2.0.0",
+    "karma-firefox-launcher": "^1.0.0",
+    "karma-jasmine": "^1.0.2",
+    "karma-webpack": "^1.7.0",
+    "style-loader": "^0.13.1",
+    "webpack": "^1.12.14"
+  }
+}

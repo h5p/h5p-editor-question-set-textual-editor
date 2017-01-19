@@ -4,8 +4,8 @@
   "license": "MIT",
   "author": "Joubel AS (icc)",
   "majorVersion": 1,
-  "minorVersion": 1,
-  "patchVersion": 3,
+  "minorVersion": 2,
+  "patchVersion": 0,
   "runnable": 0,
   "coreApi": {
     "majorVersion": 1,
@@ -13,7 +13,7 @@
   },
   "preloadedJs": [
     {
-      "path": "question-set-textual-editor.js"
+      "path": "dist/question-set-textual-editor.js"
     }
   ]
 }
