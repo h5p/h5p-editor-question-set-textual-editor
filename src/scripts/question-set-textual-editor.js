@@ -2,16 +2,6 @@ import TextParser from './text-parser'
 
 var $ = H5P.jQuery;
 var H5PEditor = H5PEditor || window.H5PEditor || {};
-// Add translations
-H5PEditor.language = H5PEditor.language || {};
-H5PEditor.language['H5PEditor.QuestionSetTextualEditor'] = {
-  'libraryStrings': {
-    'helpText': 'Use an empty line to separate each question. In multi choice the first line is the question and the next lines are the answer alternatives. The correct alternatives are prefixed with an asterisk(*), tips and feedback can also be added: *alternative:tip:feedback if chosen:feedback if not chosen. Example:',
-    'example': 'What number is PI?\n*3.14\n9.82\n\nWhat is 4 * 0?\n1\n4\n*0',
-    'warning': 'Warning! If you change the tasks in the textual editor all rich text formatting(incl. line breaks) will be removed.',
-    'unknownQuestionType': 'Non-editable question'
-  }
-};
 
 /**
  * Helps localize strings.
