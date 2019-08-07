@@ -29,7 +29,7 @@ const LB = '\n';
  * Multi Choice library to use
  * @type {string}
  */
-const MULTI_CHOICE_LIBRARY = 'H5P.MultiChoice 1.13';
+const MULTI_CHOICE_LIBRARY = 'H5P.MultiChoice 1.14';
 
 /**
  * Warn user the first time he uses the editor.
