@@ -26,10 +26,11 @@ var t = function (identifier, placeholders) {
 const LB = '\n';
 
 /**
- * Multi Choice library to use
+ * Multi Choice library to use as default. Do note we try to
+ * find the actual version in the QuestionSetTextualEditor constructor
  * @type {string}
  */
-const MULTI_CHOICE_LIBRARY = 'H5P.MultiChoice 1.16';
+let MULTI_CHOICE_LIBRARY = 'H5P.MultiChoice 1.16';
 
 /**
  * Warn user the first time he uses the editor.
@@ -44,6 +45,21 @@ export default class QuestionSetTextualEditor {
    * @param {object[]} list
    */
   constructor(list) {
+    // Try to get Multiple Choice's name + version
+    try {
+      const cache = Object.assign({}, H5PEditor.LibraryListCache.librariesComingIn, H5PEditor.LibraryListCache.libraryCache);
+
+      for (const uberName in cache) {
+        const library = H5P.libraryFromString(uberName);
+
+        if (library.machineName === 'H5P.MultiChoice') {
+          MULTI_CHOICE_LIBRARY = uberName;
+          break;
+        }
+      }
+    }
+    catch (e) { /* Fallback on the hardcoded version */ }
+    
     const self = this;
 
     //var entity = list.getEntity();
