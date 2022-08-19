@@ -1,20 +1,25 @@
 var path = require('path');
+const nodeEnv = process.env.NODE_ENV || 'development';
+const libraryName = process.env.npm_package_name;
 
 module.exports = {
-  entry: "./src/entries/dist.js",
+  mode: nodeEnv,
+  context: path.resolve(__dirname, 'src'),
+  entry: "./entries/dist.js",
+  devtool: (nodeEnv === 'production') ? undefined : 'inline-source-map',
   output: {
     path: path.join(__dirname, '/dist'),
-    filename: "question-set-textual-editor.js"
+    filename: `${libraryName}.js`
   },
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.js$/,
         include: [
           path.resolve(__dirname, "src/scripts"),
           path.resolve(__dirname, "src/entries")
         ],
-        loader: 'babel'
+        use: 'babel-loader'
       }
     ]
   }
