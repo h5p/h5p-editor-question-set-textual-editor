@@ -1,0 +1,8 @@
+{
+  "libraryStrings": {
+    "helpText": "Folosiți o linie goală pentru a separa fiecare întrebare. La întrebările cu alegere multiplă, prima linie este întrebarea, iar următoarele sunt alternativele de răspuns. Alternativele corecte sunt prefixate cu un asterisc(*), se pot adăuga și indicii și feedback: *alternativă:indiciu:feedback dacă este aleasă:feedback dacă nu este aleasă. Exemplu:",
+    "example": "Ce număr este PI?\n*3.14\n9.82\n\nCât este 4 * 0?\n1\n4\n*0",
+    "warning": "Atenție! Dacă modificați sarcinile în editorul de text, toată formatarea rich text (inclusiv sfârșiturile de rând) va fi eliminată.",
+    "unknownQuestionType": "Întrebare needitabilă"
+  }
+}
